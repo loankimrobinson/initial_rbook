@@ -1,0 +1,14 @@
+book_filename: "R Shiny Book"
+output_dir: docs
+clean: [packages.bib, bookdown.bbl]
+delete_merged_file: true
+language:
+  ui:
+    chapter_name: "Chapter "
+rmd_files:
+
+  ["index.Rmd",
+  "author.Rmd"
+  ]
+
+

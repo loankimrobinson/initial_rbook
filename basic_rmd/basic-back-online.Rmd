@@ -1,0 +1,402 @@
+
+```{r basic_back_style, include=FALSE}
+source("style.R")
+```
+
+
+# Backend Server {#basic-back}
+
+
+The ***`server`*** is the backend that takes input values from the user to ultimately generate the output results that you want to display in the application. Let's go through it line by line together.
+
+Here are some of the ***`server`*** codes. 
+
+***_Note_***: These are not full server codes
+
+```{r, eval = FALSE}
+# Backend of the application
+server <- function(session, input, output) {
+  # stored plot into reactiveValues
+  values <- reactiveValues(plot = NULL)
+  
+  # Reactive data
+  dt <- reactive({
+    req(input$dt)
+    if (input$dt == "mtcars") {
+      dt <- mtcars
+      # converts variables: cyl, qsec, vs, am, gear, carb from numeric to character
+      dt[, c(2, 8:11)] <- lapply(dt[, c(2, 8:11)], as.character)
+    } else{
+      dt <- iris
+    }
+    return(dt)
+  })
+  
+  
+  # Select Variable for plot
+  output$var <- renderUI({
+    req(dt())
+    selectInput(
+      "var_plot",
+      label = "Select Variable",
+      choices = names(dt()),
+      multiple = FALSE
+    )
+  })
+  
+  
+  # Download the plot
+  output$download <- downloadHandler(
+    filename = function() {
+      paste("plot_", input$var_plot, '.png', sep = '')
+    },
+    content = function(file) {
+      ggsave(file, plot = values$plot)
+    }
+  )
+}# end of server
+
+```
+
+
+From the codes, you can see the object called `server` through a function `function(session, input, output)`. It contained `output$var`, `output$dtable`, `output$plot_out`, `output$dl_butt`, and `output$download`, also it contained some reactivities `reactive()`, `reactiveValue()`, `observeEvent()`, and `updateTabsetPanel()`
+
+
+## Outputs - render() {#basic-back-server-output}
+
+
+```{r basic-app-server-output, echo = FALSE, fig.cap =' Basic Shiny Application Server - Output ', out.width = "70%",fig.asp=.75, fig.margin = TRUE,fig.align = "center", out.extra=out_style(),fig.show = "hold"}
+knitr::include_graphics("images/server_output.png")
+```
+
+
+### renderUI() 
+
+This is the `renderUI` function `renderUI(expr, env = parent.frame(), quoted = FALSE,outputArgs = list())`. It reactives HTML using the Shiny UI library. 
+
+Using `uiOutput()` and `renderUI()` to render selected parts of the UI with code. You can see that we had 2 "renderUI" on the server of this app.
+
+```{r, eval = FALSE}
+# Select Variable for plot
+output$var <- renderUI({
+  req(dt())
+  selectInput(
+    "var_plot",
+    label = "Select Variable",
+    choices = names(dt()),
+    multiple = FALSE
+  )
+})
+
+# create downloadButton to download the plot
+output$dl_butt <- renderUI({
+  downloadButton("download", "Download The Plot")
+})
+
+```
+
+  - The first `renderUI` creates a `selectInput()`, and the output id is `var`. So in the `ui` you will call `uiOutput("var")` to create the `ui`
+
+
+  - The second `renderUI` creates a `downloadButton()`, and the output id is `dl_butt`. So in the `ui` you will call `uiOutput("dl_butt")` to create the `ui`
+
+
+```{r, eval = FALSE}
+uiOutput("var")
+uiOutput("dl_butt")
+```
+
+
+### renderPlot() 
+
+
+
+```{r basic-app-plot, echo = FALSE, fig.cap =' Basic Shiny Application Server - Reactivitiy',fig.asp=.75, fig.margin = TRUE, out.width = "60%", fig.align = "center", out.extra=out_style()}
+knitr::include_graphics("images/basic-app-plot.png")
+```
+
+
+***renderPlot()*** renders a responsive plot suitable for assignment to an output location. Then in the `ui`, call `plotOutput()`
+
+Example:
+
+
+I want to create the histogram chart when the user has selected a continuous variable, or the bar chart when the variable is a character or a factor. To do this I need to create a plot, in this case I saved the plot using the `values$plot` object, then I want to render a plot responsive, I need to call the `renderPlot` function ", after that I used `plotOutput()` in `ui` to display the output in the desired tab.
+
+
+```{r, eval = FALSE}
+# stored plot so we can reuse for download
+values$plot <- p
+    
+# print our the Plot
+output$plot_out <- renderPlot({
+      print(p)
+}
+# PlotOutput
+plotOutput("plot_out", width = "70%", height  = "550px")
+```
+
+
+
+### renderDT() 
+
+***renderDT()*** renders a responsive table widget. This is the `renderDT()` function `renderDT(expr, server = TRUE, env = parent.frame(), quoted = FALSE, funcFilter = dataTablesFilter, ...)`. 
+
+Example:
+
+I want to generate a table, which includes the following:
+
+- Filter function.
+- 3 buttons: copy, print and download. There is a drop down option for the Download button, the user can download in csv, excell or pdf format.
+- The table has a page length of only 10 rows
+
+
+
+```{r basic-app-dt, echo = FALSE, fig.cap =' Basic Shiny Application renderDT - DTOutput', out.width = "80%",fig.asp=.75, fig.margin = TRUE, fig.align = "center", out.extra=out_style()}
+knitr::include_graphics("images/basic_app_dt.png")
+```
+
+###### {.unnumbered}
+
+```{r, eval = FALSE}
+# Dt out
+output$dtable <- DT::renderDT(server = FALSE, {
+  datatable(
+    dt(),
+    rownames = FALSE,
+    filter = 'top',
+    # filter option
+    extensions = 'Buttons',
+    # add buttons feature
+    options = list(
+      dom = "Blfrtip",
+      columnDefs = list(list(
+        className = 'dt-center', targets = "_all"
+      )),
+      ordering = F,
+      orientation = 'landscape',
+      lengthChange = FALSE,
+      pageLength = 10,
+      # 10 rows in 1 page
+      infor = FALSE,
+      autoWidth = FALSE,
+      # List of button here
+      buttons = list(list(
+        extend = 'copy',
+        exportOptions = list(
+          modifier = list(page = "all") # set list(page = "current") for current page)),
+          list(
+            extend = 'print',
+            exportOptions = list(modifier = list(page = "all"))
+          ),
+          list(
+            extend = 'collection',
+            text = 'Download',
+            # Change label of button from Collection to Download
+            buttons = list(
+              list(
+                extend = "csv",
+                filename = input$dt,
+                title = input$dt,
+                exportOptions = list(modifier = list(page = "all"))
+              ),
+              list(
+                extend = "excel",
+                filename = input$dt,
+                title = input$dt,
+                exportOptions = list(modifier = list(page = "all"))
+              ),
+              list(
+                extend = "pdf",
+                filename = input$dt,
+                title = input$dt,
+                orientation = 'landscape',
+                exportOptions = list(modifier = list(page = "all"))
+              )
+            )
+          )# end button with collection
+        )# end button)
+      )
+}
+)
+```
+
+
+
+In the `ui`, call `DTOutput()`
+
+
+```{r, eval = FALSE}
+# DTOutput
+DT::DTOutput("dtable")
+```
+
+
+### downloadHandler() 
+
+
+```{r, eval = FALSE}
+# create downloadButton to download the plot
+output$dl_butt <- renderUI({
+  downloadButton("download", "Download The Plot")
+})
+
+# Download the plot
+output$download <- downloadHandler(
+  filename = function() {
+    paste("plot_", input$var_plot, '.png', sep = '')
+  },
+  content = function(file) {
+    ggsave(file, plot = values$plot)
+  }
+)
+```
+
+
+
+## Reactivitiy() {#basic-back-server-react}
+
+
+
+```{r basic-app-server-reactive, echo = FALSE, fig.cap =' Basic Shiny Application Server - Reactivitiy', out.width = "80%",fig.asp=.75, fig.margin = TRUE, fig.align = "center", out.extra=out_style()}
+knitr::include_graphics("images/server_reactive.png")
+```
+
+
+### reactive() 
+
+
+```{r, eval = FALSE}
+# Reactive data
+dt <- reactive({
+  req(input$dt)
+  if (input$dt == "mtcars") {
+    dt <- mtcars
+    dt[, c(2, 8:11)] <- lapply(dt[, c(2, 8:11)], as.character)
+  } else{
+    dt <- iris
+  }
+  return(dt)
+})
+```
+
+
+
+### reactiveValue() 
+
+This function returns an object to store reactive values. It is similar to a list but has special reactive programming capabilities. When you read a value from it, the calling reactive expression inherits a reactive dependency on that value, and when you write to it, it notifies all reactive functions that depend on that value. Note that values coming from the reactiveValues object are reactive, but the reactiveValues object itself is not.
+
+
+```{r, eval = FALSE}
+# stored plot into reactiveValues
+values <- reactiveValues(plot = NULL)
+
+# get variable from the user "Select Variable"
+var <- dt()[, input$var_plot]
+
+if (is.numeric(var)) {
+  p <-
+    ggplot() + geom_histogram(
+      aes(x = var, fill = ..count..),
+      bins = 30,
+      position = "identity",
+      color = "white",
+      alpha = 1
+    ) +
+    scale_fill_gradient(low = "lightgray",
+                        high = "black",
+                        guide = FALSE) +
+    labs(
+      x = input$var_plot,
+      y = "Count",
+      title = paste0("Histogram of ", input$var_plot, " (", input$dt, ")")
+    ) +
+    theme_minimal() + theme(plot.title = element_text(
+      color = "gray",
+      size = 22,
+      face = "bold.italic"
+    ))
+  
+} else{
+  p <-
+    ggplot() + geom_bar(
+      aes(x = as.factor(var)),
+      stat = "count",
+      group = 1,
+      fill = c(rep("lightgray", length(unique(
+        var
+      )) - 1), "#ff7b7b")
+    ) +
+    geom_text(
+      stat = 'count',
+      aes(x = var, label = ..count..),
+      vjust = 1.6,
+      color = "white",
+      size = 11
+    ) +
+    labs(
+      x = input$var_plot,
+      y = "Count",
+      title = paste0("Bar Plot of ", input$var_plot, " (", input$dt, ")")
+    ) +
+    theme_minimal() + theme(plot.title = element_text(
+      color = "gray",
+      size = 22,
+      face = "bold.italic"
+    ))
+}
+
+# stored plot so we can reuse for download
+values$plot <- p
+
+```
+
+
+### observeEvent() & updateTabsetPanel() 
+
+An observeEvent object can be used to trigger a piece of code when an event occurs. It can state "Hey, if I do this, I want you to run the codes in it". 
+
+This is an example of the application. "Hey, when I click the submit button for the plot, the Plot tab is selected". In the following codes below, I called the `input$submit`, then it triggered `updateTabsetPanel()` to update the tab `plot_tab`
+
+
+
+```{r, eval = FALSE}
+# when the user click the submit button
+# all of events in codes chunk run
+observeEvent(input$submit, {
+  # Updated the Tab Panel, when the user click plot, it will jump to Plot tab
+  updateTabsetPanel(session, "tab_id", selected = "plot_tab")
+})
+
+
+# Create tab Panel
+tabsetPanel(
+  id = "tab_id",
+  # Data Review tab will print out the data
+  tabPanel(
+    "Data Review",
+    value = "data_tab",
+    br(),
+    br(),
+    DT::DTOutput("dtable"),
+    br(),
+    br()
+  ),
+  # Plot tab will print out the plot
+  tabPanel(
+    "Plot",
+    value = "plot_tab",
+    br(),
+    br(),
+    plotOutput("plot_out", width = "70%", height  = "550px"),
+    br(),
+    uiOutput("dl_butt")
+  )
+)
+
+```
+
+
+
+
+

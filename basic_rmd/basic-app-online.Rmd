@@ -1,0 +1,36 @@
+
+```{r basic_app_style, include=FALSE}
+source("style.R")
+```
+
+
+# Basic Shiny Application {#basic-app}
+
+Welcome to the first Basic Shiny app. The purpose of the application allows the user to easily view the histogram or bar chart and review the data sets. Users can select different datasets and different variables to plot. At the end, we will see how to implement the download of the figure and the selected dataset.
+
+What about the interface? You will learn how to create a sidebar, main panels, tabs, and how to activate the tab, when you choose the tab. 
+
+The list of application features:
+
+- In the right panel, the user can select the data, then select the variable for the graph, press the button to plot.
+- On the left panel, there are 2 tabs, one for data review, one for chart
+- At the bottom of the application, there is a footer application.
+
++ Data Review Tab includes:
+
+  1. The data table.
+  2. Buttons to download the data.
+
+
++ Plot Tab includes:
+
+  1. The Histogram Plot or Barplot.
+  2. Button to download the plot.
+
+
+  
+```{r basic-app, echo = FALSE, fig.cap =' Basic Shiny Application - Interface UI', out.width = "70%", fig.align = "center", out.extra=out_style()}
+# http://zevross.com/blog/2017/06/19/tips-and-tricks-for-working-with-images-and-figures-in-r-markdown-documents/
+knitr::include_graphics("images/basic-app-ui.png")
+```
+

@@ -1,0 +1,187 @@
+
+```{r basic_front_style,include=FALSE}
+source("style.R")
+```
+
+
+# Frontend/ User Interface UI {#basic-front}
+
+Let's start with `UI/frontend` user interface design, we called it "ui" which is a place where users interact. Here are the `ui` codes.
+
+```{r, eval = FALSE}
+# Interface of the application
+ui <- fluidPage(
+  # title of the app
+  titlePanel("Data Visualization"),
+  sidebarLayout(
+    # Sidebar Panel
+    sidebarPanel(
+      selectInput("dt", "Select Dataset", choices = c("mtcars", "iris")),
+      uiOutput("var"),
+      actionButton("submit", "Plot"),
+      hr() # a line break
+    ),
+    #close sidebarPanel()
+    
+    # Main Panel
+    mainPanel(# Create tab Panel
+      tabsetPanel(
+        id = "tab_id",
+        # Data Review tab will print out the data
+        tabPanel(
+          "Data Review",
+          value = "data_tab",
+          br(),
+          br(),
+          DT::DTOutput("dtable"),
+          br(),
+          br()
+        ),
+        # Plot tab will print out the plot
+        tabPanel(
+          "Plot",
+          value = "plot_tab",
+          br(),
+          br(),
+          plotOutput("plot_out", width = "70%", height  = "550px"),
+          br(),
+          uiOutput("dl_butt")
+        )
+      )) # close mainPanel()
+    
+  ),
+  # close sidebarLayout
+  
+  br(),
+  br(),
+  br(),
+  br(),
+  hr(),
+  source("footer.R", local = TRUE)$value
+)
+
+```
+
+From the codes you can see the object called `ui` through a function called `fluidPage()` (type `?fluidPage` on your console for more infor), this is `fluidPage(..., title = NULL, responsive = NULL, theme = NULL)` function. 
+
+There are three main elements of this function
+
+ - titlePanel()
+ 
+ - sidebarLayout()
+ 
+ - Application footer `source("footer.R", local = TRUE)$value`
+ 
+
+```{r basic-app-ui-structure, echo = FALSE, fig.cap =' Basic Shiny Application Structure - Interface UI ', out.width = "70%", fig.margin = TRUE, fig.align = "center", out.extra=out_style(),fig.show = "hold"}
+knitr::include_graphics("images/basic-app-ui-structure.png")
+```
+
+
+
+##  titlePanel() 
+
+This is the application title, you called the `titlePanel ()` function and added your application title in `quote`, in this app I have `titlePanel ("Data Visualization") `
+
+
+## sidebarLayout() 
+
+There are 2 components in `sidebarLayout()`, namely `sidebarPanel()` and `mainPanel()`. Later you will see that I have used different layouts like `fluidRow`,` box`, etc.
+
+
+### sidebarPanel() 
+
+`sidebarPanel()` is the left panel of the app.
+
+
+
+```{r, eval = FALSE}
+# sidebarPanel
+sidebarPanel(
+  selectInput("dt", "Select Dataset", choices = c("mtcars", "iris")),
+  uiOutput("var"),
+  actionButton("submit", "Plot"),
+  hr()
+)
+```
+
+
+You see there are three input controls `selectInput()` , `uiOutput()`, `actionButton()` and `hr()`. 
+
+ ***selectInput()***
+ 
+
+```{r basic-app-ui-selectInput, echo = FALSE, fig.cap =' Basic Shiny Application Structure - Interface UI ',fig.asp=.75, fig.margin = TRUE, out.width = "60%", fig.align = "center", out.extra=out_style()}
+knitr::include_graphics("images/basic-app-selectInput.png")
+```
+
+ 
+Users can select different datasets, I used `"mtcars"`, and `"iris"` datasets from this application. 
+ 
+This is the selectInput()  function `selectInput(inputId, label, choices, selected = NULL, multiple = FALSE,selectize = TRUE, width = NULL, size = NULL)`. For this function `inputId` is` "dt" `,` label` is `" Select Dataset "` and `choices` is` c ("mtcars", "iris") `
+ 
+
+ ***uiOutput()*** 
+ 
+Users can select the variables to be plotted. The choices were variable names from the selected dataset. `uiOutput` is dynamic UI, it is intended to be used with renderUI on the server side. This is `uiOutput()` function `uiOutput(outputId, inline = FALSE, container = if (inline) span else div, ...)`. We will go over `renderUI` next session of Chapter \@ref(basic-back) 
+    
+
+###### {.unnumbered}
+    
+```{r, eval = FALSE}
+# Select Variable for plot
+output$var <- renderUI({
+  req(dt())
+  selectInput(
+    "var_plot",
+    label = "Select Variable",
+    choices = names(dt()),
+    multiple = FALSE
+  )
+})
+
+```
+  
+  
+
+ ***actionButton()***
+ 
+This is the actionButton()  function `actionButton(inputId, label, icon = NULL, width = NULL, ...)`, executed the `Plot` action of the selected variable, the` inputId` argument is `" submit "`, and `label` is` "Plot" `.
+ 
+
+***`hr()`***is a horizontal line. 
+
+
+
+### mainPanel() 
+
+`mainPanel()` is the application's right panel
+
+- There is a ***`tabsetPanel()`*** function that creates a tabset containing ***`tabPanel`*** elements. Tabsets are useful for dividing output into several independently viewable sections.
+  
+- This is the function ***tabsetPanel()*** `tabsetPanel(..., id = NULL, selected = NULL, type = c("tabs", "pills"), position = NULL)`
+  
+- I set `id` to` "tab_id" `, my recommendation is to set` id` for `tabsetPanel ()` and `value` for` tabPanel () `to be easier to use if you have a complex app   
+- I created two ***`tabPanel()`***:
+
++ `tabPanel("Data Review",value = "data_tab", br(), br(), DT::DTOutput("dtable"), br(), br())`. This is Data Review Tab with `value` = `"data_tab"`. This tab contained the dataset table, named `DT :: DTOutput (" dtable ") '.
+      
++ `tabPanel (" Plot ", value =" plot_tab ", br (), br (), plotOutput (" plot_out ", width =" 70% ", height =" 550px "), br (), uiOutput (" dl_butt "))`. This is the Plot tab with `value` =` "plot_tab" `. This tab contained the plot, named `" plot_out "` and the download button, named `" dl_butt "`
+
+Note: ***`br()`***is a line break. 
+
+
+## Footer of the Application  
+
+
+I usually create my own footer and apply it to all my shiny apps. You can link to your social media like LinkedIn, Facebook, Instagram, YouTube, TikTok, etc. I will post a tutorial on how to create a footer in the last chapter \@ref(app-users)
+
+
+I called the source file `footer.R` with `source("footer.R", local = TRUE)$value` and placed it outside of `sidebarLayout()`
+
+
+```{r basic-app-footer, echo = FALSE, fig.cap =' Footer of the Application - Interface UI', fig.asp=.75, fig.margin = TRUE, out.width = "60%", fig.align = "center",out.extra=out_style(), fig.show = "hold"}
+knitr::include_graphics("images/basic-app-footer.png")
+```
+
+

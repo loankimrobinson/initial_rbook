@@ -1,0 +1,7 @@
+
+# (PART\*) Getting started {.unnumbered}
+
+# Introduction {#basic-intro .unnumbered}
+
+In this chapter, I start a small R Shiny basic application, how to install R Shiny and introduce the components of the application. You will learn the structure of the application, which are the Frontend/ User Interface UI in Chapter \@ref(basic-front), and implementing the Backend Server in Chapter \@ref(basic-back). I introduced some R packages like `DT`(https://rstudio.github.io/DT/), which provides an R interface to the JavaScript library [DataTables](https://datatables.net/), and `ggplot2`(https://ggplot2.tidyverse.org/), which provides you the best of visualization. 
+

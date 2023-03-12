@@ -1,0 +1,273 @@
+
+```{r basic_case_style, include=FALSE}
+source("style.R")
+```
+
+
+# Case Study {#basic-case}
+
+## Basic Application Structure
+
+
+```{r basic-app-dir-tree, echo = FALSE, fig.cap =' Basic Application Structure', out.width = "70%",fig.asp=.75, fig.margin = TRUE,fig.align = "center", out.extra=out_style()}
+knitr::include_graphics("images/dir_tree.png")
+```
+
+
+So far I have introduced the basic Shiny application for you. The purpose of the application is to show the data table and the histogram or bar chart, it depends on the variable selected by the users, if it is continuous it will generate a histogram chart, otherwise it will be a bar chart. Hope you can make your first R Shiny Application.
+
+
+## Completed Basic Application R Codes 
+  
+```{r, eval = FALSE}
+
+
+
+library(shiny)
+library(DT)
+library(ggplot2)
+
+
+# Interface of the application
+ui <- fluidPage(
+  # title of the app
+  titlePanel("Data Visualization"),
+  sidebarLayout(
+    # Sidebar Panel
+    sidebarPanel(
+      selectInput("dt", "Select Dataset", choices = c("mtcars", "iris")),
+      uiOutput("var"),
+      actionButton("submit", "Plot"),
+      hr() # a line break
+    ),
+    # Main Panel
+    mainPanel(# Create tab Panel
+      tabsetPanel(
+        id = "tab_id",
+        # Data Review tab will print out the data
+        tabPanel(
+          "Data Review",
+          value = "data_tab",
+          br(),
+          br(),
+          DT::DTOutput("dtable"),
+          br(),
+          br()
+        ),
+        # Plot tab will print out the plot
+        tabPanel(
+          "Plot",
+          value = "plot_tab",
+          br(),
+          br(),
+          plotOutput("plot_out", width = "70%", height  = "550px"),
+          br(),
+          uiOutput("dl_butt")
+        )
+      ))
+  ),
+  br(),
+  br(),
+  br(),
+  br(),
+  hr(),
+  source("footer.R",  local = TRUE)$value
+)
+
+# Backend of the application
+server <- function(session, input, output) {
+  # stored plot into reactiveValues
+  values <- reactiveValues(plot = NULL)
+  
+  # Reactive data
+  dt <- reactive({
+    req(input$dt)
+    if (input$dt == "mtcars") {
+      dt <- mtcars
+      dt[, c(2, 8:11)] <- lapply(dt[, c(2, 8:11)], as.character)
+    } else{
+      dt <- iris
+    }
+    return(dt)
+  })
+  
+  
+  # Select Variable for plot
+  output$var <- renderUI({
+    req(dt())
+    selectInput(
+      "var_plot",
+      label = "Select Variable",
+      choices = names(dt()),
+      multiple = FALSE
+    )
+  })
+  
+  
+  # Print out data with Copy, Print, and Download Button (csv, excel, pdf)
+  observeEvent(dt(), {
+    output$dtable <- DT::renderDT(server = FALSE, {
+      datatable(
+        dt(),
+        rownames = FALSE,
+        filter = 'top',
+        # filter option
+        extensions = 'Buttons',
+        # add buttons feature
+        options = list(
+          dom = "Blfrtip",
+          columnDefs = list(list(
+            className = 'dt-center', targets = "_all"
+          )),
+          ordering = F,
+          orientation = 'landscape',
+          lengthChange = FALSE,
+          pageLength = 10,
+          # 10 rows in 1 page
+          infor = FALSE,
+          autoWidth = FALSE,
+          # List of button here
+          buttons = list(
+            list(
+              extend = 'copy',
+              exportOptions = list(modifier = list(page = "all") 
+              ),
+              list(
+                extend = 'print',
+                exportOptions = list(modifier = list(page = "all"))
+              ),
+              list(
+                extend = 'collection',
+                text = 'Download',
+                # Change label of button from Collection to Download
+                buttons = list(
+                  list(
+                    extend = "csv",
+                    filename = input$dt,
+                    title = input$dt,
+                    exportOptions = list(modifier = list(page = "all"))
+                  ),
+                  list(
+                    extend = "excel",
+                    filename = input$dt,
+                    title = input$dt,
+                    exportOptions = list(modifier = list(page = "all"))
+                  ),
+                  list(
+                    extend = "pdf",
+                    filename = input$dt,
+                    title = input$dt,
+                    orientation = 'landscape',
+                    exportOptions = list(modifier = list(page = "all"))
+                  )
+                )
+              )# end button with collection
+            )# end button
+          )
+        )
+    })
+  })
+    
+    # when the user click the submit button
+    # all of events in codes chunk run
+    observeEvent(input$submit, {
+      # get variable from the user "Select Variable"
+      var <- dt()[, input$var_plot]
+      
+      # print out on Console to checking =======
+      
+      print(isTRUE(is.numeric(var)))
+      print(var)
+      
+      #============
+      # Plot if variable is numeric, we use histogram
+      # Plot if variable is NOT numeric, we use Bar chart
+      
+      if (is.numeric(var)) {
+        p <-
+          ggplot() + geom_histogram(
+            aes(x = var, fill = ..count..),
+            bins = 30,
+            position = "identity",
+            color = "white",
+            alpha = 1
+          ) +
+          scale_fill_gradient(low = "lightgray",
+                              high = "black",
+                              guide = FALSE) +
+          labs(
+            x = input$var_plot,
+            y = "Count",
+            title = paste0("Histogram of ", input$var_plot, " (", input$dt, ")")
+          ) +
+          theme_minimal() + theme(plot.title = element_text(
+            color = "gray",
+            size = 22,
+            face = "bold.italic"
+          ))
+        
+      } else{
+        p <-
+          ggplot() + geom_bar(
+            aes(x = as.factor(var)),
+            stat = "count",
+            group = 1,
+            fill = c(rep("lightgray", length(unique(
+              var
+            )) - 1), "#ff7b7b")
+          ) +
+          geom_text(
+            stat = 'count',
+            aes(x = var, label = ..count..),
+            vjust = 1.6,
+            color = "white",
+            size = 11
+          ) +
+          labs(
+            x = input$var_plot,
+            y = "Count",
+            title = paste0("Bar Plot of ", input$var_plot, " (", input$dt, ")")
+          ) +
+          theme_minimal() + theme(plot.title = element_text(
+            color = "gray",
+            size = 22,
+            face = "bold.italic"
+          ))
+      }
+      
+      # stored plot so we can reuse for download
+      values$plot <- p
+      
+      # print our the Plot
+      output$plot_out <- renderPlot({
+        print(p)
+      })
+      
+      # create downloadButton to download the plot
+      output$dl_butt <- renderUI({
+        downloadButton("download", "Download The Plot")
+      })
+      
+      # Updated the Tab Panel, when the user click plot, it will jump to Plot tab
+      updateTabsetPanel(session, "tab_id", selected = "plot_tab")
+      
+    })
+    
+    # Download the plot
+    output$download <- downloadHandler(
+      filename = function() {
+        paste("plot_", input$var_plot, '.png', sep = '')
+      },
+      content = function(file) {
+        ggsave(file, plot = values$plot)
+      }
+    )
+    
+}
+
+# Run the application
+shinyApp(ui = ui, server = server)
+
+```
+
+  

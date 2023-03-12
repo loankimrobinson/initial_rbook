@@ -1,0 +1,45 @@
+
+
+# About the Author {-}
+
+Loan Kim Robinson https://loankimrobinson.com is a Scientific Research Specialist at Bristol Myers Sqibb 
+https://www.bms.com. BMS is one of the largest biotech companies in the world. She held a master's degree from San Diego State University's Department of Statistics.
+
+She is interested in interactive statistical graphics, statistical computing and
+modeling. She is a highly analytical and solution-oriented professional with 7+ years
+of demonstrated success in statistical analysis and presentation, hands-on
+experience working with patient, biotechnology, and pharmaceutical drug data. She is
+successful in driving best-in-class visualization and reporting, as well as, explaining
+statistical methods to non-statistical people that results in effective understanding,
+cost savings, and efficiency. She also has experience with working across different
+levels of leadership to leverage statistical testing, business intelligence, and data-
+driven analytics.
+
+
+Her favorite programming languages are R and Python, she developed many R shiny
+applications at her previous and current work. You can find all of her applications for her book 
+here https://kimloanrobinson.shinyapps.io/r_shiny_book_web/
+
+
+She was born in Ho Chi Minh City, Vietnam, and emigrated to the United States in
+2008 with a mere 3 dollars in her pocket, barely enough to buy a sandwich. She is the
+embodiment of tenacity and determination, having overcome untold obstacles and
+struggles with incredible perseverance. 7 years later, she earned her MS in Statistics.
+From there, she worked tirelessly and passionately to become an expert in various
+fields of Statistics, Mathematics, Business Intelligence and Data Science to achieve
+her dream that few, with far more advantages, could ever hope to achieve.
+
+**_Publications_**
+
+Förger F, Bandoli G, Luo Y, Robinson L, Johnson DL, Chambers CD. Effect of
+discontinuing TNF inhibitors during pregnancy on the course of rheumatoid arthritis
+and juvenile idiopathic arthritis. Ann Rheum Dis. 2018;77(Suppl 2):604. Presented at
+the Annual European Congress of Rheumatology, EULAR. Amsterdam, Netherlands,
+June 2018. (Poster).https://ard.bmj.com/content/77/Suppl_2/604.1.info
+
+
+J. F. Smith, Chelsey and Jones, Ken and L. Johnson, Diana and Bandoli, Gretchen
+and K. Robinson, Loan and Kavanaugh, Arthur and Chambers, Christina. Risk of
+infantile hemangiomas in the offspring of women with autoimmune disease and the
+pathogenic implications of these lesions. American Journal of Medical Genetics Part
+A.http://dx.doi.org/10.1002/ajmg.a.38594
